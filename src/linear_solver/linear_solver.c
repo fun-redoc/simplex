@@ -13,12 +13,12 @@
 #include "linear_solver.h"
 
 // for debugging purposes
-//#define __TRACE_SOLVER__
-#undef __TRACE_SOLVER__
+#define __TRACE_SOLVER__
+//#undef __TRACE_SOLVER__
 
 
-MAYBE_TYPE(int);
-MAYBE_TYPE(double);
+MAYBE_TYPE(int)
+MAYBE_TYPE(double)
 MAYBE_FAIL(int)
 MAYBE_FAIL(double)
 
@@ -28,7 +28,7 @@ typedef struct
   int col;
   double val;
 } TTabloCell;
-MAYBE_TYPE(TTabloCell);
+MAYBE_TYPE(TTabloCell)
 MAYBE_FAIL(TTabloCell)
 
 static MAYBE(TTabloCell) maybeMin(MAYBE(TTabloCell) a, TTabloCell b)
@@ -115,7 +115,7 @@ static void traceLPTablo(TLinearProgram *lp, double *t, int rows, int cols)
     for(int c = 0; c < cols; c++)
     {
       //snprintf(buf, sizeof(buf), fltFmt, t[r][c]); 
-      snprintf(buf, sizeof(buf), fltFmt, (t + r*sizeof(double))[c]); 
+      snprintf(buf, sizeof(buf), fltFmt, (t + r*tabloCols)[c]); 
       snprintf(outLineFmt, maxOutLineLen, "%s|%s", outLineFmt, buf); 
     }
     snprintf(outLineFmt, maxOutLineLen, "%s|", outLineFmt); 
@@ -138,6 +138,8 @@ TLinearProgramSolution *solver(TLinearProgram *lp)
   int tabloCols = 1 + lp->numObjectiveFunctionCoefficients + numSlack + 1;
   int tabloRows = 1 + lp->numConstraints;
   double tablo[tabloRows][tabloCols];
+
+  memset(tablo, 0, tabloRows*tabloCols*sizeof(double));
   
   // initalize tablo :
   // z |  x1 | ... | xn  | s1 | s2 | s3 | ... | sm | sol |
@@ -219,6 +221,7 @@ TLinearProgramSolution *solver(TLinearProgram *lp)
       // finished when all zrow coeeficients are non negatigve
       if(zrow[i] < 0)
       {
+        // one negative found thus not finished
         finished = false;
         TTabloCell cell = {curRow, i, zrow[i]};
         if(IS_NOTHING(TTabloCell,enteringVariable))
@@ -243,7 +246,7 @@ TLinearProgramSolution *solver(TLinearProgram *lp)
       }
       TTabloCell basicCell = MAYBE_VALUE(TTabloCell, enteringVariable);
 #if defined(__DEBUG__) && defined(__TRACE_SOLVER__)
-      printf("Basic Cell %d val %.2f\n",  basicCell.col, basicCell.val);
+      printf("Entering Variable row=%d col=%d val=%.2f\n",basicCell.row, basicCell.col, basicCell.val);
 #endif
       INIT_NOTHING(TTabloCell,leavingVar);
       double ratio;

@@ -1,4 +1,5 @@
-CFLAGS=-Wall -Wextra -std=c11 -pedantic
+ARCH=x86_64
+CFLAGS=-Wall -Wextra -std=c11 -pedantic -arch $(ARCH)
 #SDL_HEADERS=-I/Library/Frameworks/SDL2.framework/Headers -I/Library/Frameworks/SDL2_image.framework/Headers
 #SDL_LIBS=-F/Library/Frameworks -framework SDL2 -framework SDL2_image
 
@@ -17,7 +18,7 @@ INC_DIRS := $(shell find $(SRC_DIRS) -type d)
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
 CPPFLAGS ?= $(INC_FLAGS) $(SDL_HEADERS) -MMD -MP
-LDFLAGS ?= $(SDL_LIBS)
+LDFLAGS ?= -arch $(ARCH) $(SDL_LIBS)
 
 $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
 	$(CC) $(OBJS) -o $@ $(LDFLAGS)
